@@ -10,7 +10,7 @@ const getExtension = (filename) => path.extname(filename).slice(1);
 
 const getData = (filePath) => parser(readFileSync(filePath, 'utf-8'), getExtension(filePath));
 
-const gendiff = (filePath1, filePath2, format = 'stylish') => {
+const genDiff = (filePath1, filePath2, format = 'stylish') => {
   const path1 = resolvePath(filePath1);
   const path2 = resolvePath(filePath2);
 
@@ -20,4 +20,4 @@ const gendiff = (filePath1, filePath2, format = 'stylish') => {
   return formatter(getDifferenceTree(data1, data2), format);
 };
 
-export default gendiff;
+export default genDiff;
