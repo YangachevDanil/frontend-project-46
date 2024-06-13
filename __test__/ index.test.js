@@ -1,5 +1,5 @@
 import path from 'node:path';
-import resultStylish from '../__fixtures__/result';
+import resultStylish from '../__fixtures__/result.js';
 import resultPlain from '../__fixtures__/resultPlain.js';
 import resultJSON from '../__fixtures__/resultJSON.js';
 import genDiff from '../src/index.js';
