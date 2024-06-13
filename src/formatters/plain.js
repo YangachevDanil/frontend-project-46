@@ -1,49 +1,45 @@
-import _ from 'lodash';
+import {
+  KEY_UNCHANGED,
+  KEY_ADDED,
+  KEY_DELETED,
+  KEY_UPDATED,
+  KEY_NESTED_DIFF,
+} from '../consts.js';
 
-const getPath = (nodeNames) => nodeNames.flat().join('.');
-
-const getFormattedValue = (value) => {
-  switch (typeof value) {
-    case 'object': {
-      return !value ? 'null' : '[complex value]';
-    }
-    case 'string': {
-      return `'${value}'`;
-    }
-    default: {
-      return `${value}`;
-    }
+const formatValue = (value) => {
+  if (typeof value === 'object' && value !== null) {
+    return '[complex value]';
   }
+  if (typeof value === 'string') {
+    return `'${value}'`;
+  }
+  return value;
 };
 
-export function makePlainDiff(tree) {
-  const iter = (node, path) => node.map((child) => {
-    const currentPath = getPath([path, child.key]);
-    switch (child.type) {
-      case 'nested': {
-        return iter(child.children, currentPath);
-      }
-      case 'added': {
-        return `Property '${currentPath}' was added with value: ${getFormattedValue(child.value)}`;
-      }
-      case 'removed': {
-        return `Property '${currentPath}' was removed`;
-      }
-      case 'changed': {
-        return `Property '${currentPath}' was updated. From ${getFormattedValue(child.oldValue)} to ${getFormattedValue(child.newValue)}`;
-      }
-      case 'unchanged': {
-        return null;
-      }
-      default: {
-        throw Error('Uncorrect data');
-      }
+const getDiffLines = (diff, parents) => {
+  const keyPrefix = parents !== '' ? `${parents}.` : '';
+
+  const lines = diff.map((currDiff) => {
+    if (currDiff.keyStatus === KEY_UNCHANGED) {
+      return '';
+    }
+    const key = `${keyPrefix}${currDiff.key}`;
+    switch (currDiff.keyStatus) {
+      case KEY_ADDED:
+        return `Property '${key}' was added with value: ${formatValue(currDiff.second)}`;
+      case KEY_DELETED:
+        return `Property '${key}' was removed`;
+      case KEY_UPDATED:
+        return `Property '${key}' was updated. From ${formatValue(currDiff.first)} to ${formatValue(currDiff.second)}`;
+      case KEY_NESTED_DIFF:
+        return getDiffLines(currDiff.nestedDiff, key);
+      default:
+        throw new Error(`unknown key status: ${currDiff.keyStatus}`);
     }
   });
-  return iter(tree.children, []);
-}
+  return lines.filter((elem) => elem !== '').flat();
+};
 
-export default function makePlain(data) {
-  const result = makePlainDiff(data);
-  return _.flattenDeep(result).filter((el) => el).join('\n');
-}
+const plainFormatter = (diff) => getDiffLines(diff, '').join('\n');
+
+export default plainFormatter;

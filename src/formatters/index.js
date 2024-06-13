@@ -1,15 +1,18 @@
-import makePlain from './plain.js';
-import makeStylish from './stylish.js';
+import stylishFormatter from './stylish.js';
+import plainFormatter from './plain.js';
+import jsonFormatter from './json.js';
 
-export default function formatter(tree, format) {
-  switch (format) {
+const getFormatter = (name) => {
+  switch (name) {
     case 'stylish':
-      return makeStylish(tree);
+      return stylishFormatter;
     case 'plain':
-      return makePlain(tree);
+      return plainFormatter;
     case 'json':
-      return JSON.stringify(tree);
+      return jsonFormatter;
     default:
-      throw new Error('Uncorrect data');
+      throw new Error(`unknown formatter name: ${name}`);
   }
-}
+};
+
+export default getFormatter;
